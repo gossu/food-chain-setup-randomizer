@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 interface ConfigPageProps {
   onGenerate: (config: ConfigSettings) => void;
@@ -67,6 +67,8 @@ const themeColors = {
 }
 
 export function ConfigPage({ onGenerate }: ConfigPageProps) {
+  const sliderStartRef = useRef<Record<string, { x: number; y: number }>>({})
+
   // Initialize state from localStorage immediately to avoid race condition
   const [minComplexity, setMinComplexity] = useState(() => loadFromStorage('minComplexity', DEFAULT_MIN_COMPLEXITY))
   const [maxComplexity, setMaxComplexity] = useState(() => loadFromStorage('maxComplexity', DEFAULT_MAX_COMPLEXITY))
@@ -163,6 +165,29 @@ export function ConfigPage({ onGenerate }: ConfigPageProps) {
 
   const additionsSum = calculateAdditionsSum(additions)
 
+  const handleSliderPointerDown = (sliderId: string, event: React.PointerEvent<HTMLElement>) => {
+    sliderStartRef.current[sliderId] = { x: event.clientX, y: event.clientY }
+  }
+
+  const handleSliderPointerMove = (sliderId: string, event: React.PointerEvent<HTMLElement>) => {
+    const startPoint = sliderStartRef.current[sliderId]
+    if (!startPoint) return
+
+    const deltaX = Math.abs(event.clientX - startPoint.x)
+    const deltaY = Math.abs(event.clientY - startPoint.y)
+
+    if (deltaY > 12 && deltaY > deltaX) {
+      event.preventDefault()
+      return
+    }
+  }
+
+  const handleSliderPointerEnd = (sliderId: string) => {
+    if (sliderStartRef.current[sliderId]) {
+      delete sliderStartRef.current[sliderId]
+    }
+  }
+
   const handleGenerateClick = () => {
     const config: ConfigSettings = {
       minComplexity,
@@ -200,15 +225,23 @@ export function ConfigPage({ onGenerate }: ConfigPageProps) {
             <label htmlFor="minComplexity">
               Minimum Complexity: <span style={styles.value}>{minComplexity}</span>
             </label>
-            <input
-              id="minComplexity"
-              type="range"
-              min="0"
-              max={additionsSum}
-              value={minComplexity}
-              onChange={(e) => handleMinComplexityChange(Number(e.target.value))}
-              style={styles.slider}
-            />
+            <div
+              onPointerDown={(event) => handleSliderPointerDown('minComplexity', event)}
+              onPointerMove={(event) => handleSliderPointerMove('minComplexity', event)}
+              onPointerUp={() => handleSliderPointerEnd('minComplexity')}
+              onPointerLeave={() => handleSliderPointerEnd('minComplexity')}
+              style={styles.sliderWrapper}
+            >
+              <input
+                id="minComplexity"
+                type="range"
+                min="0"
+                max={additionsSum}
+                value={minComplexity}
+                onChange={(e) => handleMinComplexityChange(Number(e.target.value))}
+                style={styles.slider}
+              />
+            </div>
             <div style={styles.helperText}>Max: {additionsSum} (sum of all enabled additions)</div>
           </div>
 
@@ -216,15 +249,23 @@ export function ConfigPage({ onGenerate }: ConfigPageProps) {
             <label htmlFor="maxComplexity">
               Maximum Complexity: <span style={styles.value}>{maxComplexity}</span>
             </label>
-            <input
-              id="maxComplexity"
-              type="range"
-              min="0"
-              max={additionsSum}
-              value={maxComplexity}
-              onChange={(e) => handleMaxComplexityChange(Number(e.target.value))}
-              style={styles.slider}
-            />
+            <div
+              onPointerDown={(event) => handleSliderPointerDown('maxComplexity', event)}
+              onPointerMove={(event) => handleSliderPointerMove('maxComplexity', event)}
+              onPointerUp={() => handleSliderPointerEnd('maxComplexity')}
+              onPointerLeave={() => handleSliderPointerEnd('maxComplexity')}
+              style={styles.sliderWrapper}
+            >
+              <input
+                id="maxComplexity"
+                type="range"
+                min="0"
+                max={additionsSum}
+                value={maxComplexity}
+                onChange={(e) => handleMaxComplexityChange(Number(e.target.value))}
+                style={styles.slider}
+              />
+            </div>
             <div style={styles.helperText}>Max: {additionsSum} (sum of all enabled additions)</div>
           </div>
         </div>
@@ -242,48 +283,72 @@ export function ConfigPage({ onGenerate }: ConfigPageProps) {
             <label htmlFor="newMilestones">
               New Milestones Chance: <span style={styles.value}>{newChallengesChance}%</span>
             </label>
-            <input
-              id="newMilestones"
-              type="range"
-              min="0"
-              max="100"
-              step="5"
-              value={newChallengesChance}
-              onChange={(e) => setNewChallengesChance(Number(e.target.value))}
-              style={styles.slider}
-            />
+            <div
+              onPointerDown={(event) => handleSliderPointerDown('newMilestones', event)}
+              onPointerMove={(event) => handleSliderPointerMove('newMilestones', event)}
+              onPointerUp={() => handleSliderPointerEnd('newMilestones')}
+              onPointerLeave={() => handleSliderPointerEnd('newMilestones')}
+              style={styles.sliderWrapper}
+            >
+              <input
+                id="newMilestones"
+                type="range"
+                min="0"
+                max="100"
+                step="5"
+                value={newChallengesChance}
+                onChange={(e) => setNewChallengesChance(Number(e.target.value))}
+                style={styles.slider}
+              />
+            </div>
           </div>
 
           <div style={styles.configItem}>
             <label htmlFor="hardChoices">
               Hard Choices for Old Milestones Chance: <span style={styles.value}>{hardChoicesChance}%</span>
             </label>
-            <input
-              id="hardChoices"
-              type="range"
-              min="0"
-              max="100"
-              step="5"
-              value={hardChoicesChance}
-              onChange={(e) => setHardChoicesChance(Number(e.target.value))}
-              style={styles.slider}
-            />
+            <div
+              onPointerDown={(event) => handleSliderPointerDown('hardChoices', event)}
+              onPointerMove={(event) => handleSliderPointerMove('hardChoices', event)}
+              onPointerUp={() => handleSliderPointerEnd('hardChoices')}
+              onPointerLeave={() => handleSliderPointerEnd('hardChoices')}
+              style={styles.sliderWrapper}
+            >
+              <input
+                id="hardChoices"
+                type="range"
+                min="0"
+                max="100"
+                step="5"
+                value={hardChoicesChance}
+                onChange={(e) => setHardChoicesChance(Number(e.target.value))}
+                style={styles.slider}
+              />
+            </div>
           </div>
 
           <div style={styles.configItem}>
             <label htmlFor="newReserveCards">
               New Reserve Cards Chance: <span style={styles.value}>{newReserveCardsChance}%</span>
             </label>
-            <input
-              id="newReserveCards"
-              type="range"
-              min="0"
-              max="100"
-              step="5"
-              value={newReserveCardsChance}
-              onChange={(e) => setNewReserveCardsChance(Number(e.target.value))}
-              style={styles.slider}
-            />
+            <div
+              onPointerDown={(event) => handleSliderPointerDown('newReserveCards', event)}
+              onPointerMove={(event) => handleSliderPointerMove('newReserveCards', event)}
+              onPointerUp={() => handleSliderPointerEnd('newReserveCards')}
+              onPointerLeave={() => handleSliderPointerEnd('newReserveCards')}
+              style={styles.sliderWrapper}
+            >
+              <input
+                id="newReserveCards"
+                type="range"
+                min="0"
+                max="100"
+                step="5"
+                value={newReserveCardsChance}
+                onChange={(e) => setNewReserveCardsChance(Number(e.target.value))}
+                style={styles.slider}
+              />
+            </div>
           </div>
         </div>
 
@@ -320,15 +385,23 @@ export function ConfigPage({ onGenerate }: ConfigPageProps) {
                   <label htmlFor={`addition-${index}`}>
                     Complexity: <span style={styles.value}>{addition.complexity}</span>
                   </label>
-                  <input
-                    id={`addition-${index}`}
-                    type="range"
-                    min="1"
-                    max="5"
-                    value={addition.complexity}
-                    onChange={(e) => handleAdditionComplexityChange(index, Number(e.target.value))}
-                    style={styles.slider}
-                  />
+                  <div
+                    onPointerDown={(event) => handleSliderPointerDown(`addition-${index}`, event)}
+                    onPointerMove={(event) => handleSliderPointerMove(`addition-${index}`, event)}
+                    onPointerUp={() => handleSliderPointerEnd(`addition-${index}`)}
+                    onPointerLeave={() => handleSliderPointerEnd(`addition-${index}`)}
+                    style={styles.sliderWrapper}
+                  >
+                    <input
+                      id={`addition-${index}`}
+                      type="range"
+                      min="1"
+                      max="5"
+                      value={addition.complexity}
+                      onChange={(e) => handleAdditionComplexityChange(index, Number(e.target.value))}
+                      style={styles.slider}
+                    />
+                  </div>
                 </div>
               </div>
             ))}
@@ -406,6 +479,11 @@ const styles = {
   } as const,
   configItem: {
     marginBottom: '14px',
+  } as const,
+  sliderWrapper: {
+    width: '100%',
+    touchAction: 'pan-y',
+    WebkitTapHighlightColor: 'transparent',
   } as const,
   slider: {
     width: '100%',
