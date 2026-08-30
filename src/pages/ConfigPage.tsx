@@ -22,8 +22,8 @@ export interface ConfigSettings {
 }
 
 const DEFAULT_ADDITIONS: Addition[] = [
-  { name: 'lobbyist', enabled: true, complexity: 3 },
-  { name: 'cofee', enabled: true, complexity: 3 },
+  { name: 'lobbyists', enabled: true, complexity: 3 },
+  { name: 'coffee', enabled: true, complexity: 3 },
   { name: 'kimchi', enabled: true, complexity: 2 },
   { name: 'sushi', enabled: true, complexity: 2 },
   { name: 'noodles', enabled: true, complexity: 2 },
@@ -392,7 +392,7 @@ export function ConfigPage({ onGenerate }: ConfigPageProps) {
                     onChange={() => handleAdditionToggle(index)}
                     style={styles.checkbox}
                   />
-                  <label style={styles.additionName}>{addition.name}</label>
+                  <label style={{...styles.additionName, opacity: addition.enabled ? 1 : 0.5,}}>{addition.name}</label>
                 </div>
                 <div
                   style={{
