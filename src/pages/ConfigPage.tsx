@@ -147,9 +147,12 @@ export function ConfigPage({ onGenerate }: ConfigPageProps) {
     setMaxComplexity(DEFAULT_MAX_COMPLEXITY)
   }
 
-  const resetReplacements = () => {
+  const resetMilestones = () => {
     setNewChallengesChance(DEFAULT_REPLACEMENTS.newChallengesChance)
     setHardChoicesChance(DEFAULT_REPLACEMENTS.hardChoicesChance)
+  }
+
+  const resetReserveCards = () => {
     setNewReserveCardsChance(DEFAULT_REPLACEMENTS.newReserveCardsChance)
   }
 
@@ -159,7 +162,8 @@ export function ConfigPage({ onGenerate }: ConfigPageProps) {
 
   const resetAll = () => {
     resetComplexity()
-    resetReplacements()
+    resetMilestones()
+    resetReserveCards()
     resetAdditions()
   }
 
@@ -206,16 +210,111 @@ export function ConfigPage({ onGenerate }: ConfigPageProps) {
     <div style={styles.container}>
       <div style={styles.scrollContent}>
         <div style={styles.headerRow}>
-          <h1>Food Chain Configuration</h1>
+          <h1>Generator Config</h1>
           <button type="button" onClick={resetAll} style={styles.headerResetButton}>
             Reset all
           </button>
         </div>
+
+
+              {/* Replacements Section */}
+        <div style={styles.section}>
+          <div style={styles.sectionHeader}>
+            <h3>Milestones</h3>
+            <button type="button" onClick={resetMilestones} style={styles.sectionResetButton}>
+              Reset
+            </button>
+          </div>
+          
+          <div style={styles.configItem}>
+            <label htmlFor="newMilestones">
+              New Milestones: <span style={styles.value}>{newChallengesChance}%</span>
+            </label>
+            <div
+              onPointerDown={(event) => handleSliderPointerDown('newMilestones', event)}
+              onPointerMove={(event) => handleSliderPointerMove('newMilestones', event)}
+              onPointerUp={() => handleSliderPointerEnd('newMilestones')}
+              onPointerLeave={() => handleSliderPointerEnd('newMilestones')}
+              style={styles.sliderWrapper}
+            >
+              <input
+                id="newMilestones"
+                type="range"
+                min="0"
+                max="100"
+                step="5"
+                value={newChallengesChance}
+                onChange={(e) => setNewChallengesChance(Number(e.target.value))}
+                style={styles.slider}
+              />
+            </div>
+          </div>
+
+          <div style={styles.configItem}>
+            <label htmlFor="hardChoices">
+              Hard Choices if Old Milestones: <span style={styles.value}>{hardChoicesChance}%</span>
+            </label>
+            <div
+              onPointerDown={(event) => handleSliderPointerDown('hardChoices', event)}
+              onPointerMove={(event) => handleSliderPointerMove('hardChoices', event)}
+              onPointerUp={() => handleSliderPointerEnd('hardChoices')}
+              onPointerLeave={() => handleSliderPointerEnd('hardChoices')}
+              style={styles.sliderWrapper}
+            >
+              <input
+                id="hardChoices"
+                type="range"
+                min="0"
+                max="100"
+                step="5"
+                value={hardChoicesChance}
+                onChange={(e) => setHardChoicesChance(Number(e.target.value))}
+                style={styles.slider}
+              />
+            </div>
+          </div>
+
+          
+        </div>
+
+        <div style={styles.section}>
+          <div style={styles.sectionHeader}>
+            <h3>Reserve Cards</h3>
+            <button type="button" onClick={resetReserveCards} style={styles.sectionResetButton}>
+              Reset
+            </button>
+          </div>
+
+          <div style={styles.configItem}>
+            <label htmlFor="newReserveCards">
+              New Reserve Cards: <span style={styles.value}>{newReserveCardsChance}%</span>
+            </label>
+            <div
+              onPointerDown={(event) => handleSliderPointerDown('newReserveCards', event)}
+              onPointerMove={(event) => handleSliderPointerMove('newReserveCards', event)}
+              onPointerUp={() => handleSliderPointerEnd('newReserveCards')}
+              onPointerLeave={() => handleSliderPointerEnd('newReserveCards')}
+              style={styles.sliderWrapper}
+            >
+              <input
+                id="newReserveCards"
+                type="range"
+                min="0"
+                max="100"
+                step="5"
+                value={newReserveCardsChance}
+                onChange={(e) => setNewReserveCardsChance(Number(e.target.value))}
+                style={styles.slider}
+              />
+            </div>
+          </div>
+          </div>
+
         
         {/* Complexity Section */}
         <div style={styles.section}>
           <div style={styles.sectionHeader}>
-            <h2>Complexity</h2>
+            <h3>Complexity</h3>
             <button type="button" onClick={resetComplexity} style={styles.sectionResetButton}>
               Reset
             </button>
@@ -270,92 +369,12 @@ export function ConfigPage({ onGenerate }: ConfigPageProps) {
           </div>
         </div>
 
-        {/* Replacements Section */}
-        <div style={styles.section}>
-          <div style={styles.sectionHeader}>
-            <h2>Replacements</h2>
-            <button type="button" onClick={resetReplacements} style={styles.sectionResetButton}>
-              Reset
-            </button>
-          </div>
-          
-          <div style={styles.configItem}>
-            <label htmlFor="newMilestones">
-              New Milestones Chance: <span style={styles.value}>{newChallengesChance}%</span>
-            </label>
-            <div
-              onPointerDown={(event) => handleSliderPointerDown('newMilestones', event)}
-              onPointerMove={(event) => handleSliderPointerMove('newMilestones', event)}
-              onPointerUp={() => handleSliderPointerEnd('newMilestones')}
-              onPointerLeave={() => handleSliderPointerEnd('newMilestones')}
-              style={styles.sliderWrapper}
-            >
-              <input
-                id="newMilestones"
-                type="range"
-                min="0"
-                max="100"
-                step="5"
-                value={newChallengesChance}
-                onChange={(e) => setNewChallengesChance(Number(e.target.value))}
-                style={styles.slider}
-              />
-            </div>
-          </div>
 
-          <div style={styles.configItem}>
-            <label htmlFor="hardChoices">
-              Hard Choices for Old Milestones Chance: <span style={styles.value}>{hardChoicesChance}%</span>
-            </label>
-            <div
-              onPointerDown={(event) => handleSliderPointerDown('hardChoices', event)}
-              onPointerMove={(event) => handleSliderPointerMove('hardChoices', event)}
-              onPointerUp={() => handleSliderPointerEnd('hardChoices')}
-              onPointerLeave={() => handleSliderPointerEnd('hardChoices')}
-              style={styles.sliderWrapper}
-            >
-              <input
-                id="hardChoices"
-                type="range"
-                min="0"
-                max="100"
-                step="5"
-                value={hardChoicesChance}
-                onChange={(e) => setHardChoicesChance(Number(e.target.value))}
-                style={styles.slider}
-              />
-            </div>
-          </div>
-
-          <div style={styles.configItem}>
-            <label htmlFor="newReserveCards">
-              New Reserve Cards Chance: <span style={styles.value}>{newReserveCardsChance}%</span>
-            </label>
-            <div
-              onPointerDown={(event) => handleSliderPointerDown('newReserveCards', event)}
-              onPointerMove={(event) => handleSliderPointerMove('newReserveCards', event)}
-              onPointerUp={() => handleSliderPointerEnd('newReserveCards')}
-              onPointerLeave={() => handleSliderPointerEnd('newReserveCards')}
-              style={styles.sliderWrapper}
-            >
-              <input
-                id="newReserveCards"
-                type="range"
-                min="0"
-                max="100"
-                step="5"
-                value={newReserveCardsChance}
-                onChange={(e) => setNewReserveCardsChance(Number(e.target.value))}
-                style={styles.slider}
-              />
-            </div>
-          </div>
-        </div>
 
         {/* Additions Section */}
         <div style={styles.section}>
           <div style={styles.sectionHeader}>
-            <h2>Additions</h2>
+            <h3>Modules</h3>
             <button type="button" onClick={resetAdditions} style={styles.sectionResetButton}>
               Reset
             </button>

@@ -46,7 +46,7 @@ export function ResultPage({ onBack, onRegenerate, config, resultVersion }: Resu
     // If old milestone, determine if with/without hard choices
     if (!isNewMilestone) {
       const withHardChoices = Math.random() * 100 < config.replacements.hardChoicesChance
-      milestonesResult += withHardChoices ? ' with Hard Choices' : ' without Hard Choices'
+      milestonesResult += withHardChoices ? ' - with Hard Choices' : ' - without Hard Choices'
     }
 
     // Reserve Cards: Determine if new or old
@@ -128,22 +128,11 @@ export function ResultPage({ onBack, onRegenerate, config, resultVersion }: Resu
   return (
     <div style={styles.container}>
       <div style={styles.scrollContent}>
-        <h1>Generated Results</h1>
+        <h1>Generated Setup</h1>
         
-        {/* Milestones Section */}
         <div style={styles.section}>
-          <h2>Milestones</h2>
-          <div style={styles.resultBox}>
-            <p style={styles.resultText}>{results.milestones}</p>
-          </div>
-        </div>
-
-        {/* Reserve Cards Section */}
-        <div style={styles.section}>
-          <h2>Reserve Cards</h2>
-          <div style={styles.resultBox}>
-            <p style={styles.resultText}>{results.reserveCards}</p>
-          </div>
+          <div style={styles.resultBox}><p style={styles.resultText}>Milestones: <b>{results.milestones}</b></p></div>
+          <div style={styles.resultBox}><p style={styles.resultText}>Reserve Cards: <b>{results.reserveCards}</b></p></div>
         </div>
 
         {/* Modules Section */}
