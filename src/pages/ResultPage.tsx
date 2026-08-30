@@ -66,10 +66,15 @@ export function ResultPage({ onBack, config }: ResultPageProps) {
         candidateLists.push([...selectedModules])
       }
       
-      // Step 2: Add next module and increase complexity
-      selectedModules.push(module)
-      complexitySoFar += module.complexity
-      console.log(`    Adding module "${module.name}" (complexity: ${module.complexity}). New total: ${complexitySoFar}`)
+      // Step 2: Add next module and increase complexity, but only if it doesn't exceed max
+      const newComplexity = complexitySoFar + module.complexity
+      if (newComplexity <= config.maxComplexity) {
+        selectedModules.push(module)
+        complexitySoFar = newComplexity
+        console.log(`    Adding module "${module.name}" (complexity: ${module.complexity}). New total: ${complexitySoFar}`)
+      } else {
+        console.log(`    Skipping module "${module.name}" (complexity: ${module.complexity}) - would exceed max (${newComplexity} > ${config.maxComplexity})`)
+      }
     }
     
     // After loop, check one more time if we're within range
