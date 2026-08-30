@@ -4,38 +4,105 @@ interface ConfigPageProps {
   onGenerate: (config: ConfigSettings) => void;
 }
 
+export interface Addition {
+  name: string;
+  enabled: boolean;
+  complexity: number;
+}
+
 export interface ConfigSettings {
   minComplexity: number;
   maxComplexity: number;
-  replacements: string;
-  additions: string;
+  replacements: {
+    newChallengesChance: number;
+    hardChoicesChance: number;
+    newReserveCardsChance: number;
+  };
+  additions: Addition[];
 }
+
+const DEFAULT_ADDITIONS: Addition[] = [
+  { name: 'lobbyist', enabled: true, complexity: 3 },
+  { name: 'cofee', enabled: true, complexity: 3 },
+  { name: 'kimchi', enabled: true, complexity: 2 },
+  { name: 'sushi', enabled: true, complexity: 2 },
+  { name: 'noodles', enabled: true, complexity: 2 },
+  { name: 'ketchup', enabled: true, complexity: 1 },
+  { name: 'fry chefs', enabled: true, complexity: 1 },
+  { name: 'night shift', enabled: true, complexity: 1 },
+  { name: 'mass marketeers', enabled: true, complexity: 1 },
+  { name: 'rural marketeers', enabled: true, complexity: 2 },
+  { name: 'food critics', enabled: true, complexity: 1 },
+  { name: 'movie stars', enabled: true, complexity: 1 },
+]
 
 export function ConfigPage({ onGenerate }: ConfigPageProps) {
   const [minComplexity, setMinComplexity] = useState(5)
   const [maxComplexity, setMaxComplexity] = useState(8)
-  const [replacements, setReplacements] = useState('')
-  const [additions, setAdditions] = useState('')
+  const [newChallengesChance, setNewChallengesChance] = useState(50)
+  const [hardChoicesChance, setHardChoicesChance] = useState(50)
+  const [newReserveCardsChance, setNewReserveCardsChance] = useState(50)
+  const [additions, setAdditions] = useState<Addition[]>(DEFAULT_ADDITIONS)
 
   const handleMinComplexityChange = (value: number) => {
-    // Prevent min from going above max
     if (value <= maxComplexity) {
       setMinComplexity(value)
     }
   }
 
   const handleMaxComplexityChange = (value: number) => {
-    // Prevent max from going below min
     if (value >= minComplexity) {
       setMaxComplexity(value)
     }
   }
 
+  const handleAdditionToggle = (index: number) => {
+    const updatedAdditions = [...additions]
+    updatedAdditions[index].enabled = !updatedAdditions[index].enabled
+    setAdditions(updatedAdditions)
+
+    // Recalculate complexity limits
+    const newSum = calculateAdditionsSum(updatedAdditions)
+    if (minComplexity > newSum) {
+      setMinComplexity(newSum)
+    }
+    if (maxComplexity > newSum) {
+      setMaxComplexity(newSum)
+    }
+  }
+
+  const handleAdditionComplexityChange = (index: number, complexity: number) => {
+    const updatedAdditions = [...additions]
+    updatedAdditions[index].complexity = complexity
+    setAdditions(updatedAdditions)
+
+    // Recalculate complexity limits
+    const newSum = calculateAdditionsSum(updatedAdditions)
+    if (minComplexity > newSum) {
+      setMinComplexity(newSum)
+    }
+    if (maxComplexity > newSum) {
+      setMaxComplexity(newSum)
+    }
+  }
+
+  const calculateAdditionsSum = (additionsList: Addition[]): number => {
+    return additionsList.reduce((sum, addition) => {
+      return addition.enabled ? sum + addition.complexity : sum
+    }, 0)
+  }
+
+  const additionsSum = calculateAdditionsSum(additions)
+
   const handleGenerateClick = () => {
     const config: ConfigSettings = {
       minComplexity,
       maxComplexity,
-      replacements,
+      replacements: {
+        newChallengesChance,
+        hardChoicesChance,
+        newReserveCardsChance,
+      },
       additions,
     }
     onGenerate(config)
@@ -57,11 +124,12 @@ export function ConfigPage({ onGenerate }: ConfigPageProps) {
             id="minComplexity"
             type="range"
             min="0"
-            max="20"
+            max={additionsSum}
             value={minComplexity}
             onChange={(e) => handleMinComplexityChange(Number(e.target.value))}
             style={styles.slider}
           />
+          <div style={styles.helperText}>Max: {additionsSum} (sum of all enabled additions)</div>
         </div>
 
         <div style={styles.configItem}>
@@ -72,34 +140,107 @@ export function ConfigPage({ onGenerate }: ConfigPageProps) {
             id="maxComplexity"
             type="range"
             min="0"
-            max="20"
+            max={additionsSum}
             value={maxComplexity}
             onChange={(e) => handleMaxComplexityChange(Number(e.target.value))}
             style={styles.slider}
           />
+          <div style={styles.helperText}>Max: {additionsSum} (sum of all enabled additions)</div>
         </div>
       </div>
 
       {/* Replacements Section */}
       <div style={styles.section}>
         <h2>Replacements</h2>
-        <textarea
-          placeholder="Enter replacements here..."
-          value={replacements}
-          onChange={(e) => setReplacements(e.target.value)}
-          style={styles.textarea}
-        />
+        
+        <div style={styles.configItem}>
+          <label htmlFor="newMilestones">
+            New Milestones Chance: <span style={styles.value}>{newChallengesChance}%</span>
+          </label>
+          <input
+            id="newMilestones"
+            type="range"
+            min="0"
+            max="100"
+            step="5"
+            value={newChallengesChance}
+            onChange={(e) => setNewChallengesChance(Number(e.target.value))}
+            style={styles.slider}
+          />
+        </div>
+
+        <div style={styles.configItem}>
+          <label htmlFor="hardChoices">
+            Hard Choices for Old Milestones Chance: <span style={styles.value}>{hardChoicesChance}%</span>
+          </label>
+          <input
+            id="hardChoices"
+            type="range"
+            min="0"
+            max="100"
+            step="5"
+            value={hardChoicesChance}
+            onChange={(e) => setHardChoicesChance(Number(e.target.value))}
+            style={styles.slider}
+          />
+        </div>
+
+        <div style={styles.configItem}>
+          <label htmlFor="newReserveCards">
+            New Reserve Cards Chance: <span style={styles.value}>{newReserveCardsChance}%</span>
+          </label>
+          <input
+            id="newReserveCards"
+            type="range"
+            min="0"
+            max="100"
+            step="5"
+            value={newReserveCardsChance}
+            onChange={(e) => setNewReserveCardsChance(Number(e.target.value))}
+            style={styles.slider}
+          />
+        </div>
       </div>
 
       {/* Additions Section */}
       <div style={styles.section}>
         <h2>Additions</h2>
-        <textarea
-          placeholder="Enter additions here..."
-          value={additions}
-          onChange={(e) => setAdditions(e.target.value)}
-          style={styles.textarea}
-        />
+        <div style={styles.additionsList}>
+          {additions.map((addition, index) => (
+            <div
+              key={addition.name}
+              style={{
+                ...styles.additionItem,
+                opacity: addition.enabled ? 1 : 0.5,
+                pointerEvents: addition.enabled ? 'auto' : 'none',
+              }}
+            >
+              <div style={styles.additionHeader}>
+                <input
+                  type="checkbox"
+                  checked={addition.enabled}
+                  onChange={() => handleAdditionToggle(index)}
+                  style={styles.checkbox}
+                />
+                <label style={styles.additionName}>{addition.name}</label>
+              </div>
+              <div style={styles.additionSliderContainer}>
+                <label htmlFor={`addition-${index}`}>
+                  Complexity: <span style={styles.value}>{addition.complexity}</span>
+                </label>
+                <input
+                  id={`addition-${index}`}
+                  type="range"
+                  min="1"
+                  max="5"
+                  value={addition.complexity}
+                  onChange={(e) => handleAdditionComplexityChange(index, Number(e.target.value))}
+                  style={styles.slider}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
 
       <button onClick={handleGenerateClick} style={styles.button}>
@@ -112,7 +253,7 @@ export function ConfigPage({ onGenerate }: ConfigPageProps) {
 const styles = {
   container: {
     padding: '40px',
-    maxWidth: '600px',
+    maxWidth: '700px',
     margin: '0 auto',
   } as const,
   section: {
@@ -135,15 +276,42 @@ const styles = {
     fontWeight: 'bold',
     color: '#007bff',
   } as const,
-  textarea: {
-    width: '100%',
-    minHeight: '80px',
-    padding: '8px',
-    fontSize: '14px',
-    fontFamily: 'monospace',
-    borderRadius: '4px',
+  helperText: {
+    fontSize: '12px',
+    color: '#666',
+    marginTop: '4px',
+  } as const,
+  additionsList: {
+    display: 'flex',
+    flexDirection: 'column' as const,
+    gap: '15px',
+  } as const,
+  additionItem: {
+    padding: '15px',
     border: '1px solid #ddd',
-    boxSizing: 'border-box' as const,
+    borderRadius: '6px',
+    backgroundColor: 'white',
+    transition: 'opacity 0.2s',
+  } as const,
+  additionHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    marginBottom: '12px',
+    gap: '10px',
+  } as const,
+  checkbox: {
+    width: '18px',
+    height: '18px',
+    cursor: 'pointer',
+  } as const,
+  additionName: {
+    fontSize: '16px',
+    fontWeight: '500' as const,
+    textTransform: 'capitalize' as const,
+    margin: 0,
+  } as const,
+  additionSliderContainer: {
+    paddingLeft: '28px',
   } as const,
   button: {
     padding: '12px 32px',

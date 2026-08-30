@@ -11,7 +11,19 @@ function App() {
 
   const handleGenerate = (config: ConfigSettings) => {
     // TODO: Add your generation logic here
-    const result = `Generated with config:\nMin Complexity: ${config.minComplexity}\nMax Complexity: ${config.maxComplexity}\nReplacements: ${config.replacements || 'None'}\nAdditions: ${config.additions || 'None'}`
+    const enabledAdditions = config.additions
+      .filter(a => a.enabled)
+      .map(a => `${a.name} (complexity: ${a.complexity})`)
+      .join('\n')
+    
+    const result = `Generated with config:
+Min Complexity: ${config.minComplexity}
+Max Complexity: ${config.maxComplexity}
+New Milestones Chance: ${config.replacements.newChallengesChance}%
+Hard Choices Chance: ${config.replacements.hardChoicesChance}%
+New Reserve Cards Chance: ${config.replacements.newReserveCardsChance}%
+Enabled Additions:
+${enabledAdditions || 'None'}`
     setGeneratedResult(result)
     setCurrentPage('result')
   }
