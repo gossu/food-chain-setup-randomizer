@@ -45,6 +45,17 @@ const loadFromStorage = <T,>(key: string, defaultValue: T): T => {
   }
 }
 
+const themeColors = {
+  bgPrimary: 'var(--bg-primary)',
+  bgSecondary: 'var(--bg-secondary)',
+  bgCard: 'var(--bg-card)',
+  textPrimary: 'var(--text-primary)',
+  textSecondary: 'var(--text-secondary)',
+  borderColor: 'var(--border-color)',
+  accentPrimary: 'var(--accent-primary)',
+  accentSecondary: 'var(--accent-secondary)',
+}
+
 export function ConfigPage({ onGenerate }: ConfigPageProps) {
   // Initialize state from localStorage immediately to avoid race condition
   const [minComplexity, setMinComplexity] = useState(() => loadFromStorage('minComplexity', 5))
@@ -284,13 +295,15 @@ const styles = {
     padding: '40px',
     maxWidth: '700px',
     margin: '0 auto',
+    backgroundColor: themeColors.bgPrimary,
+    color: themeColors.textPrimary,
   } as const,
   section: {
     marginBottom: '30px',
     padding: '20px',
-    border: '1px solid #ccc',
+    border: `1px solid ${themeColors.borderColor}`,
     borderRadius: '8px',
-    backgroundColor: '#fafafa',
+    backgroundColor: themeColors.bgSecondary,
   } as const,
   configItem: {
     marginBottom: '20px',
@@ -303,11 +316,11 @@ const styles = {
   } as const,
   value: {
     fontWeight: 'bold',
-    color: '#007bff',
+    color: themeColors.accentPrimary,
   } as const,
   helperText: {
     fontSize: '12px',
-    color: '#666',
+    color: themeColors.textSecondary,
     marginTop: '4px',
   } as const,
   additionsList: {
@@ -317,9 +330,9 @@ const styles = {
   } as const,
   additionItem: {
     padding: '15px',
-    border: '1px solid #ddd',
+    border: `1px solid ${themeColors.borderColor}`,
     borderRadius: '6px',
-    backgroundColor: 'white',
+    backgroundColor: themeColors.bgCard,
     transition: 'opacity 0.2s',
   } as const,
   additionHeader: {
@@ -338,6 +351,7 @@ const styles = {
     fontWeight: '500' as const,
     textTransform: 'capitalize' as const,
     margin: 0,
+    color: themeColors.textPrimary,
   } as const,
   additionSliderContainer: {
     paddingLeft: '28px',
@@ -345,10 +359,11 @@ const styles = {
   button: {
     padding: '12px 32px',
     fontSize: '18px',
-    backgroundColor: '#007bff',
-    color: 'white',
+    backgroundColor: themeColors.accentPrimary,
+    color: '#ffffff',
     border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
+    transition: 'opacity 0.2s',
   } as const,
 };

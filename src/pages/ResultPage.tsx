@@ -21,6 +21,17 @@ const shuffleArray = <T,>(array: T[]): T[] => {
   return shuffled
 }
 
+const themeColors = {
+  bgPrimary: 'var(--bg-primary)',
+  bgSecondary: 'var(--bg-secondary)',
+  bgCard: 'var(--bg-card)',
+  textPrimary: 'var(--text-primary)',
+  textSecondary: 'var(--text-secondary)',
+  borderColor: 'var(--border-color)',
+  accentPrimary: 'var(--accent-primary)',
+  accentSecondary: 'var(--accent-secondary)',
+}
+
 export function ResultPage({ onBack, config }: ResultPageProps) {
   const generateResults = (): GeneratedResults => {
     console.log('=== Starting Module Generation ===')
@@ -170,18 +181,20 @@ const styles = {
     padding: '40px',
     maxWidth: '700px',
     margin: '0 auto',
+    backgroundColor: themeColors.bgPrimary,
+    color: themeColors.textPrimary,
   } as const,
   section: {
     marginBottom: '30px',
     padding: '20px',
-    border: '1px solid #ccc',
+    border: `1px solid ${themeColors.borderColor}`,
     borderRadius: '8px',
-    backgroundColor: '#fafafa',
+    backgroundColor: themeColors.bgSecondary,
   } as const,
   resultBox: {
     padding: '15px',
-    backgroundColor: 'white',
-    border: '1px solid #ddd',
+    backgroundColor: themeColors.bgCard,
+    border: `1px solid ${themeColors.borderColor}`,
     borderRadius: '6px',
     minHeight: '60px',
   } as const,
@@ -190,6 +203,7 @@ const styles = {
     lineHeight: '1.6',
     margin: 0,
     fontWeight: '500' as const,
+    color: themeColors.textPrimary,
   } as const,
   modulesList: {
     listStyle: 'none',
@@ -200,38 +214,41 @@ const styles = {
     padding: '8px 0',
     fontSize: '16px',
     textTransform: 'capitalize' as const,
-    borderBottom: '1px solid #eee',
+    borderBottom: `1px solid ${themeColors.borderColor}`,
     display: 'flex',
     justifyContent: 'space-between',
     alignItems: 'center',
+    color: themeColors.textPrimary,
   } as const,
   moduleName: {
     flex: 1,
   } as const,
   moduleComplexity: {
     fontWeight: 'bold',
-    color: '#007bff',
+    color: themeColors.accentPrimary,
     minWidth: '30px',
     textAlign: 'center' as const,
   } as const,
   totalComplexity: {
     marginTop: '16px',
     paddingTop: '12px',
-    borderTop: '2px solid #ddd',
+    borderTop: `2px solid ${themeColors.borderColor}`,
     fontSize: '16px',
     fontWeight: '600' as const,
+    color: themeColors.textPrimary,
   } as const,
   totalValue: {
-    color: '#007bff',
+    color: themeColors.accentPrimary,
     fontWeight: 'bold',
   } as const,
   button: {
     padding: '12px 32px',
     fontSize: '18px',
-    backgroundColor: '#6c757d',
-    color: 'white',
+    backgroundColor: themeColors.accentPrimary,
+    color: '#ffffff',
     border: 'none',
     borderRadius: '4px',
     cursor: 'pointer',
+    transition: 'opacity 0.2s',
   } as const,
 };
