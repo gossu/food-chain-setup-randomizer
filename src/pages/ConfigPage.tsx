@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 
 interface ConfigPageProps {
   onGenerate: (config: ConfigSettings) => void;
@@ -36,13 +36,40 @@ const DEFAULT_ADDITIONS: Addition[] = [
   { name: 'movie stars', enabled: true, complexity: 1 },
 ]
 
+const loadFromStorage = <T,>(key: string, defaultValue: T): T => {
+  try {
+    const saved = localStorage.getItem('foodChainConfig')
+    return saved ? JSON.parse(saved)[key] ?? defaultValue : defaultValue
+  } catch {
+    return defaultValue
+  }
+}
+
 export function ConfigPage({ onGenerate }: ConfigPageProps) {
-  const [minComplexity, setMinComplexity] = useState(5)
-  const [maxComplexity, setMaxComplexity] = useState(8)
-  const [newChallengesChance, setNewChallengesChance] = useState(50)
-  const [hardChoicesChance, setHardChoicesChance] = useState(50)
-  const [newReserveCardsChance, setNewReserveCardsChance] = useState(50)
-  const [additions, setAdditions] = useState<Addition[]>(DEFAULT_ADDITIONS)
+  // Initialize state from localStorage immediately to avoid race condition
+  const [minComplexity, setMinComplexity] = useState(() => loadFromStorage('minComplexity', 5))
+  const [maxComplexity, setMaxComplexity] = useState(() => loadFromStorage('maxComplexity', 8))
+  const [newChallengesChance, setNewChallengesChance] = useState(() => loadFromStorage('newChallengesChance', 50))
+  const [hardChoicesChance, setHardChoicesChance] = useState(() => loadFromStorage('hardChoicesChance', 50))
+  const [newReserveCardsChance, setNewReserveCardsChance] = useState(() => loadFromStorage('newReserveCardsChance', 50))
+  const [additions, setAdditions] = useState(() => loadFromStorage('additions', DEFAULT_ADDITIONS))
+
+  // Save to localStorage whenever state changes
+  useEffect(() => {
+    try {
+      const configToSave = {
+        minComplexity,
+        maxComplexity,
+        newChallengesChance,
+        hardChoicesChance,
+        newReserveCardsChance,
+        additions,
+      }
+      localStorage.setItem('foodChainConfig', JSON.stringify(configToSave))
+    } catch (error) {
+      console.error('Failed to save config to localStorage:', error)
+    }
+  }, [minComplexity, maxComplexity, newChallengesChance, hardChoicesChance, newReserveCardsChance, additions])
 
   const handleMinComplexityChange = (value: number) => {
     if (value <= maxComplexity) {
@@ -209,11 +236,7 @@ export function ConfigPage({ onGenerate }: ConfigPageProps) {
           {additions.map((addition, index) => (
             <div
               key={addition.name}
-              style={{
-                ...styles.additionItem,
-                opacity: addition.enabled ? 1 : 0.5,
-                pointerEvents: addition.enabled ? 'auto' : 'none',
-              }}
+              style={styles.additionItem}
             >
               <div style={styles.additionHeader}>
                 <input
@@ -224,7 +247,13 @@ export function ConfigPage({ onGenerate }: ConfigPageProps) {
                 />
                 <label style={styles.additionName}>{addition.name}</label>
               </div>
-              <div style={styles.additionSliderContainer}>
+              <div
+                style={{
+                  ...styles.additionSliderContainer,
+                  opacity: addition.enabled ? 1 : 0.5,
+                  pointerEvents: addition.enabled ? 'auto' : 'none',
+                }}
+              >
                 <label htmlFor={`addition-${index}`}>
                   Complexity: <span style={styles.value}>{addition.complexity}</span>
                 </label>

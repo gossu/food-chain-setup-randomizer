@@ -1,18 +1,156 @@
+import type { ConfigSettings, Addition } from './ConfigPage'
+
 interface ResultPageProps {
   onBack: () => void;
-  result?: string;
+  config: ConfigSettings;
 }
 
-export function ResultPage({ onBack, result }: ResultPageProps) {
+interface GeneratedResults {
+  milestones: string;
+  reserveCards: string;
+  modules: Addition[];
+}
+
+// Fisher-Yates shuffle algorithm
+const shuffleArray = <T,>(array: T[]): T[] => {
+  const shuffled = [...array]
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
+  }
+  return shuffled
+}
+
+export function ResultPage({ onBack, config }: ResultPageProps) {
+  const generateResults = (): GeneratedResults => {
+    console.log('=== Starting Module Generation ===')
+    
+    // Milestones: Determine if new or old
+    const isNewMilestone = Math.random() * 100 < config.replacements.newChallengesChance
+    
+    let milestonesResult = isNewMilestone ? 'New' : 'Old'
+    
+    // If old milestone, determine if with/without hard choices
+    if (!isNewMilestone) {
+      const withHardChoices = Math.random() * 100 < config.replacements.hardChoicesChance
+      milestonesResult += withHardChoices ? ' with Hard Choices' : ' without Hard Choices'
+    }
+
+    // Reserve Cards: Determine if new or old
+    const isNewReserveCards = Math.random() * 100 < config.replacements.newReserveCardsChance
+    const reserveCardsResult = isNewReserveCards ? 'New' : 'Old'
+
+    // Modules: Generate list based on complexity
+    console.log('Complexity Range:', config.minComplexity, '-', config.maxComplexity)
+    
+    const enabledAdditions = config.additions.filter(a => a.enabled)
+    console.log('Enabled Additions:', enabledAdditions.map(a => `${a.name} (${a.complexity})`))
+    
+    const shuffledModules = shuffleArray(enabledAdditions)
+    console.log('Shuffled Modules:', shuffledModules.map(m => `${m.name} (${m.complexity})`))
+    
+    const candidateLists: Addition[][] = []
+    const selectedModules: Addition[] = []
+    let complexitySoFar = 0
+    
+    console.log('Starting Iteration:')
+    for (let i = 0; i < shuffledModules.length; i++) {
+      const module = shuffledModules[i]
+      
+      // Step 1: If within range, add current selection to candidates
+      const isWithinRange = complexitySoFar >= config.minComplexity && complexitySoFar <= config.maxComplexity
+      console.log(`  Step ${i + 1}: Complexity so far = ${complexitySoFar}. Within range? ${isWithinRange}`)
+      
+      if (isWithinRange) {
+        console.log(`    ✓ Adding candidate: [${selectedModules.map(m => m.name).join(', ')}]`)
+        candidateLists.push([...selectedModules])
+      }
+      
+      // Step 2: Add next module and increase complexity
+      selectedModules.push(module)
+      complexitySoFar += module.complexity
+      console.log(`    Adding module "${module.name}" (complexity: ${module.complexity}). New total: ${complexitySoFar}`)
+    }
+    
+    // After loop, check one more time if we're within range
+    const finalIsWithinRange = complexitySoFar >= config.minComplexity && complexitySoFar <= config.maxComplexity
+    console.log(`Final check: Complexity = ${complexitySoFar}. Within range? ${finalIsWithinRange}`)
+    if (finalIsWithinRange) {
+      console.log(`  ✓ Adding final candidate: [${selectedModules.map(m => m.name).join(', ')}]`)
+      candidateLists.push([...selectedModules])
+    }
+    
+    console.log(`Total candidates generated: ${candidateLists.length}`)
+    console.log('Candidate lists:')
+    candidateLists.forEach((list, idx) => {
+      const totalComplexity = list.reduce((sum, m) => sum + m.complexity, 0)
+      console.log(`  ${idx + 1}. [${list.map(m => `${m.name}(${m.complexity})`).join(', ')}] - Total: ${totalComplexity}`)
+    })
+    
+    // Pick a random candidate list, or empty if no candidates
+    let modulesResult: Addition[] = []
+    if (candidateLists.length > 0) {
+      modulesResult = candidateLists[Math.floor(Math.random() * candidateLists.length)]
+      const selectedComplexity = modulesResult.reduce((sum, m) => sum + m.complexity, 0)
+      console.log(`Selected candidate: [${modulesResult.map(m => `${m.name}(${m.complexity})`).join(', ')}] - Total: ${selectedComplexity}`)
+    } else {
+      console.log('No valid candidates found!')
+    }
+    
+    console.log('=== Module Generation Complete ===\n')
+
+    return {
+      milestones: milestonesResult,
+      reserveCards: reserveCardsResult,
+      modules: modulesResult,
+    }
+  }
+
+  const results = generateResults()
   return (
     <div style={styles.container}>
-      <h1>Results</h1>
+      <h1>Generated Results</h1>
       
-      {/* Display generated results here */}
-      <div style={styles.resultSection}>
-        <p style={styles.resultText}>
-          {result || 'Your generated content will appear here...'}
-        </p>
+      {/* Milestones Section */}
+      <div style={styles.section}>
+        <h2>Milestones</h2>
+        <div style={styles.resultBox}>
+          <p style={styles.resultText}>{results.milestones}</p>
+        </div>
+      </div>
+
+      {/* Reserve Cards Section */}
+      <div style={styles.section}>
+        <h2>Reserve Cards</h2>
+        <div style={styles.resultBox}>
+          <p style={styles.resultText}>{results.reserveCards}</p>
+        </div>
+      </div>
+
+      {/* Modules Section */}
+      <div style={styles.section}>
+        <h2>Modules</h2>
+        <div style={styles.resultBox}>
+          {results.modules.length > 0 ? (
+            <>
+              <ul style={styles.modulesList}>
+                {results.modules.map((module) => (
+                  <li key={module.name} style={styles.moduleItem}>
+                    <span style={styles.moduleName}>{module.name}</span>
+                    <span style={styles.moduleComplexity}>{module.complexity}</span>
+                  </li>
+                ))}
+              </ul>
+              <div style={styles.totalComplexity}>
+                Total Complexity: <span style={styles.totalValue}>
+                  {results.modules.reduce((sum, m) => sum + m.complexity, 0)}
+                </span>
+              </div>
+            </>
+          ) : (
+            <p style={styles.resultText}>No valid modules found for this complexity range</p>
+          )}
+        </div>
       </div>
 
       <button onClick={onBack} style={styles.button}>
@@ -25,22 +163,62 @@ export function ResultPage({ onBack, result }: ResultPageProps) {
 const styles = {
   container: {
     padding: '40px',
-    maxWidth: '600px',
+    maxWidth: '700px',
     margin: '0 auto',
   } as const,
-  resultSection: {
-    marginBottom: '40px',
+  section: {
+    marginBottom: '30px',
     padding: '20px',
-    backgroundColor: '#f5f5f5',
-    border: '1px solid #ddd',
+    border: '1px solid #ccc',
     borderRadius: '8px',
-    minHeight: '200px',
+    backgroundColor: '#fafafa',
+  } as const,
+  resultBox: {
+    padding: '15px',
+    backgroundColor: 'white',
+    border: '1px solid #ddd',
+    borderRadius: '6px',
+    minHeight: '60px',
   } as const,
   resultText: {
     fontSize: '16px',
     lineHeight: '1.6',
-    whiteSpace: 'pre-wrap',
-    wordBreak: 'break-word' as const,
+    margin: 0,
+    fontWeight: '500' as const,
+  } as const,
+  modulesList: {
+    listStyle: 'none',
+    padding: 0,
+    margin: 0,
+  } as const,
+  moduleItem: {
+    padding: '8px 0',
+    fontSize: '16px',
+    textTransform: 'capitalize' as const,
+    borderBottom: '1px solid #eee',
+    display: 'flex',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  } as const,
+  moduleName: {
+    flex: 1,
+  } as const,
+  moduleComplexity: {
+    fontWeight: 'bold',
+    color: '#007bff',
+    minWidth: '30px',
+    textAlign: 'center' as const,
+  } as const,
+  totalComplexity: {
+    marginTop: '16px',
+    paddingTop: '12px',
+    borderTop: '2px solid #ddd',
+    fontSize: '16px',
+    fontWeight: '600' as const,
+  } as const,
+  totalValue: {
+    color: '#007bff',
+    fontWeight: 'bold',
   } as const,
   button: {
     padding: '12px 32px',
