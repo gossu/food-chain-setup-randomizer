@@ -112,6 +112,7 @@ textarea:focus {
 
 input[type="range"] {
   accent-color: var(--accent-primary);
+  touch-action: pan-y;
 }
 
 input[type="checkbox"] {
