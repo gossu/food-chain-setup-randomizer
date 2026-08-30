@@ -2,7 +2,9 @@ import type { ConfigSettings, Addition } from './ConfigPage'
 
 interface ResultPageProps {
   onBack: () => void;
+  onRegenerate: () => void;
   config: ConfigSettings;
+  resultVersion: number;
 }
 
 interface GeneratedResults {
@@ -32,7 +34,7 @@ const themeColors = {
   accentSecondary: 'var(--accent-secondary)',
 }
 
-export function ResultPage({ onBack, config }: ResultPageProps) {
+export function ResultPage({ onBack, onRegenerate, config, resultVersion }: ResultPageProps) {
   const generateResults = (): GeneratedResults => {
     console.log('=== Starting Module Generation ===')
     
@@ -125,64 +127,81 @@ export function ResultPage({ onBack, config }: ResultPageProps) {
   const results = generateResults()
   return (
     <div style={styles.container}>
-      <h1>Generated Results</h1>
-      
-      {/* Milestones Section */}
-      <div style={styles.section}>
-        <h2>Milestones</h2>
-        <div style={styles.resultBox}>
-          <p style={styles.resultText}>{results.milestones}</p>
+      <div style={styles.scrollContent}>
+        <h1>Generated Results</h1>
+        
+        {/* Milestones Section */}
+        <div style={styles.section}>
+          <h2>Milestones</h2>
+          <div style={styles.resultBox}>
+            <p style={styles.resultText}>{results.milestones}</p>
+          </div>
+        </div>
+
+        {/* Reserve Cards Section */}
+        <div style={styles.section}>
+          <h2>Reserve Cards</h2>
+          <div style={styles.resultBox}>
+            <p style={styles.resultText}>{results.reserveCards}</p>
+          </div>
+        </div>
+
+        {/* Modules Section */}
+        <div style={styles.section}>
+          <h2>Modules</h2>
+          <div style={styles.resultBox}>
+            {results.modules.length > 0 ? (
+              <>
+                <ul style={styles.modulesList}>
+                  {results.modules.map((module) => (
+                    <li key={`${module.name}-${resultVersion}`} style={styles.moduleItem}>
+                      <span style={styles.moduleName}>{module.name}</span>
+                      <span style={styles.moduleComplexity}>{module.complexity}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div style={styles.totalComplexity}>
+                  Total Complexity: <span style={styles.totalValue}>
+                    {results.modules.reduce((sum, m) => sum + m.complexity, 0)}
+                  </span>
+                </div>
+              </>
+            ) : (
+              <p style={styles.resultText}>No valid modules found for this complexity range</p>
+            )}
+          </div>
         </div>
       </div>
 
-      {/* Reserve Cards Section */}
-      <div style={styles.section}>
-        <h2>Reserve Cards</h2>
-        <div style={styles.resultBox}>
-          <p style={styles.resultText}>{results.reserveCards}</p>
-        </div>
+      <div style={styles.buttonBar}>
+        <button onClick={onBack} style={styles.secondaryButton}>
+          Back to Configuration
+        </button>
+        <button onClick={onRegenerate} style={styles.primaryButton}>
+          Regenerate
+        </button>
       </div>
-
-      {/* Modules Section */}
-      <div style={styles.section}>
-        <h2>Modules</h2>
-        <div style={styles.resultBox}>
-          {results.modules.length > 0 ? (
-            <>
-              <ul style={styles.modulesList}>
-                {results.modules.map((module) => (
-                  <li key={module.name} style={styles.moduleItem}>
-                    <span style={styles.moduleName}>{module.name}</span>
-                    <span style={styles.moduleComplexity}>{module.complexity}</span>
-                  </li>
-                ))}
-              </ul>
-              <div style={styles.totalComplexity}>
-                Total Complexity: <span style={styles.totalValue}>
-                  {results.modules.reduce((sum, m) => sum + m.complexity, 0)}
-                </span>
-              </div>
-            </>
-          ) : (
-            <p style={styles.resultText}>No valid modules found for this complexity range</p>
-          )}
-        </div>
-      </div>
-
-      <button onClick={onBack} style={styles.button}>
-        Back to Configuration
-      </button>
     </div>
   );
 }
 
 const styles = {
   container: {
-    padding: '40px',
+    width: '100%',
     maxWidth: '700px',
+    minHeight: '100vh',
     margin: '0 auto',
+    padding: '40px 40px 0',
+    boxSizing: 'border-box' as const,
     backgroundColor: themeColors.bgPrimary,
     color: themeColors.textPrimary,
+    display: 'flex',
+    flexDirection: 'column' as const,
+    overflowY: 'auto' as const,
+  } as const,
+  scrollContent: {
+    flex: 1,
+    paddingBottom: '20px',
   } as const,
   section: {
     marginBottom: '30px',
@@ -241,12 +260,34 @@ const styles = {
     color: themeColors.accentPrimary,
     fontWeight: 'bold',
   } as const,
-  button: {
-    padding: '12px 32px',
+  buttonBar: {
+    position: 'sticky' as const,
+    bottom: 0,
+    backgroundColor: themeColors.bgPrimary,
+    borderTop: `1px solid ${themeColors.borderColor}`,
+    padding: '16px 0 24px',
+    marginTop: '12px',
+    display: 'flex',
+    gap: '12px',
+    justifyContent: 'center',
+    zIndex: 1,
+  } as const,
+  primaryButton: {
+    padding: '12px 20px',
     fontSize: '18px',
     backgroundColor: themeColors.accentPrimary,
     color: '#ffffff',
     border: 'none',
+    borderRadius: '4px',
+    cursor: 'pointer',
+    transition: 'opacity 0.2s',
+  } as const,
+  secondaryButton: {
+    padding: '12px 20px',
+    fontSize: '18px',
+    backgroundColor: themeColors.bgCard,
+    color: themeColors.textPrimary,
+    border: `1px solid ${themeColors.borderColor}`,
     borderRadius: '4px',
     cursor: 'pointer',
     transition: 'opacity 0.2s',

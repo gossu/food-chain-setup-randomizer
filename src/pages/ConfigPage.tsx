@@ -36,6 +36,16 @@ const DEFAULT_ADDITIONS: Addition[] = [
   { name: 'movie stars', enabled: true, complexity: 1 },
 ]
 
+const DEFAULT_MIN_COMPLEXITY = 5
+const DEFAULT_MAX_COMPLEXITY = 8
+const DEFAULT_REPLACEMENTS = {
+  newChallengesChance: 50,
+  hardChoicesChance: 50,
+  newReserveCardsChance: 50,
+}
+
+const getDefaultAdditions = (): Addition[] => DEFAULT_ADDITIONS.map((addition) => ({ ...addition }))
+
 const loadFromStorage = <T,>(key: string, defaultValue: T): T => {
   try {
     const saved = localStorage.getItem('foodChainConfig')
@@ -58,12 +68,12 @@ const themeColors = {
 
 export function ConfigPage({ onGenerate }: ConfigPageProps) {
   // Initialize state from localStorage immediately to avoid race condition
-  const [minComplexity, setMinComplexity] = useState(() => loadFromStorage('minComplexity', 5))
-  const [maxComplexity, setMaxComplexity] = useState(() => loadFromStorage('maxComplexity', 8))
-  const [newChallengesChance, setNewChallengesChance] = useState(() => loadFromStorage('newChallengesChance', 50))
-  const [hardChoicesChance, setHardChoicesChance] = useState(() => loadFromStorage('hardChoicesChance', 50))
-  const [newReserveCardsChance, setNewReserveCardsChance] = useState(() => loadFromStorage('newReserveCardsChance', 50))
-  const [additions, setAdditions] = useState(() => loadFromStorage('additions', DEFAULT_ADDITIONS))
+  const [minComplexity, setMinComplexity] = useState(() => loadFromStorage('minComplexity', DEFAULT_MIN_COMPLEXITY))
+  const [maxComplexity, setMaxComplexity] = useState(() => loadFromStorage('maxComplexity', DEFAULT_MAX_COMPLEXITY))
+  const [newChallengesChance, setNewChallengesChance] = useState(() => loadFromStorage('newChallengesChance', DEFAULT_REPLACEMENTS.newChallengesChance))
+  const [hardChoicesChance, setHardChoicesChance] = useState(() => loadFromStorage('hardChoicesChance', DEFAULT_REPLACEMENTS.hardChoicesChance))
+  const [newReserveCardsChance, setNewReserveCardsChance] = useState(() => loadFromStorage('newReserveCardsChance', DEFAULT_REPLACEMENTS.newReserveCardsChance))
+  const [additions, setAdditions] = useState(() => loadFromStorage('additions', getDefaultAdditions()))
 
   // Save to localStorage whenever state changes
   useEffect(() => {
@@ -130,6 +140,27 @@ export function ConfigPage({ onGenerate }: ConfigPageProps) {
     }, 0)
   }
 
+  const resetComplexity = () => {
+    setMinComplexity(DEFAULT_MIN_COMPLEXITY)
+    setMaxComplexity(DEFAULT_MAX_COMPLEXITY)
+  }
+
+  const resetReplacements = () => {
+    setNewChallengesChance(DEFAULT_REPLACEMENTS.newChallengesChance)
+    setHardChoicesChance(DEFAULT_REPLACEMENTS.hardChoicesChance)
+    setNewReserveCardsChance(DEFAULT_REPLACEMENTS.newReserveCardsChance)
+  }
+
+  const resetAdditions = () => {
+    setAdditions(getDefaultAdditions())
+  }
+
+  const resetAll = () => {
+    resetComplexity()
+    resetReplacements()
+    resetAdditions()
+  }
+
   const additionsSum = calculateAdditionsSum(additions)
 
   const handleGenerateClick = () => {
@@ -148,155 +179,189 @@ export function ConfigPage({ onGenerate }: ConfigPageProps) {
 
   return (
     <div style={styles.container}>
-      <h1>Food Chain Configuration</h1>
-      
-      {/* Complexity Section */}
-      <div style={styles.section}>
-        <h2>Complexity</h2>
+      <div style={styles.scrollContent}>
+        <div style={styles.headerRow}>
+          <h1>Food Chain Configuration</h1>
+          <button type="button" onClick={resetAll} style={styles.headerResetButton}>
+            Reset all
+          </button>
+        </div>
         
-        <div style={styles.configItem}>
-          <label htmlFor="minComplexity">
-            Minimum Complexity: <span style={styles.value}>{minComplexity}</span>
-          </label>
-          <input
-            id="minComplexity"
-            type="range"
-            min="0"
-            max={additionsSum}
-            value={minComplexity}
-            onChange={(e) => handleMinComplexityChange(Number(e.target.value))}
-            style={styles.slider}
-          />
-          <div style={styles.helperText}>Max: {additionsSum} (sum of all enabled additions)</div>
+        {/* Complexity Section */}
+        <div style={styles.section}>
+          <div style={styles.sectionHeader}>
+            <h2>Complexity</h2>
+            <button type="button" onClick={resetComplexity} style={styles.sectionResetButton}>
+              Reset
+            </button>
+          </div>
+          
+          <div style={styles.configItem}>
+            <label htmlFor="minComplexity">
+              Minimum Complexity: <span style={styles.value}>{minComplexity}</span>
+            </label>
+            <input
+              id="minComplexity"
+              type="range"
+              min="0"
+              max={additionsSum}
+              value={minComplexity}
+              onChange={(e) => handleMinComplexityChange(Number(e.target.value))}
+              style={styles.slider}
+            />
+            <div style={styles.helperText}>Max: {additionsSum} (sum of all enabled additions)</div>
+          </div>
+
+          <div style={styles.configItem}>
+            <label htmlFor="maxComplexity">
+              Maximum Complexity: <span style={styles.value}>{maxComplexity}</span>
+            </label>
+            <input
+              id="maxComplexity"
+              type="range"
+              min="0"
+              max={additionsSum}
+              value={maxComplexity}
+              onChange={(e) => handleMaxComplexityChange(Number(e.target.value))}
+              style={styles.slider}
+            />
+            <div style={styles.helperText}>Max: {additionsSum} (sum of all enabled additions)</div>
+          </div>
         </div>
 
-        <div style={styles.configItem}>
-          <label htmlFor="maxComplexity">
-            Maximum Complexity: <span style={styles.value}>{maxComplexity}</span>
-          </label>
-          <input
-            id="maxComplexity"
-            type="range"
-            min="0"
-            max={additionsSum}
-            value={maxComplexity}
-            onChange={(e) => handleMaxComplexityChange(Number(e.target.value))}
-            style={styles.slider}
-          />
-          <div style={styles.helperText}>Max: {additionsSum} (sum of all enabled additions)</div>
-        </div>
-      </div>
+        {/* Replacements Section */}
+        <div style={styles.section}>
+          <div style={styles.sectionHeader}>
+            <h2>Replacements</h2>
+            <button type="button" onClick={resetReplacements} style={styles.sectionResetButton}>
+              Reset
+            </button>
+          </div>
+          
+          <div style={styles.configItem}>
+            <label htmlFor="newMilestones">
+              New Milestones Chance: <span style={styles.value}>{newChallengesChance}%</span>
+            </label>
+            <input
+              id="newMilestones"
+              type="range"
+              min="0"
+              max="100"
+              step="5"
+              value={newChallengesChance}
+              onChange={(e) => setNewChallengesChance(Number(e.target.value))}
+              style={styles.slider}
+            />
+          </div>
 
-      {/* Replacements Section */}
-      <div style={styles.section}>
-        <h2>Replacements</h2>
-        
-        <div style={styles.configItem}>
-          <label htmlFor="newMilestones">
-            New Milestones Chance: <span style={styles.value}>{newChallengesChance}%</span>
-          </label>
-          <input
-            id="newMilestones"
-            type="range"
-            min="0"
-            max="100"
-            step="5"
-            value={newChallengesChance}
-            onChange={(e) => setNewChallengesChance(Number(e.target.value))}
-            style={styles.slider}
-          />
+          <div style={styles.configItem}>
+            <label htmlFor="hardChoices">
+              Hard Choices for Old Milestones Chance: <span style={styles.value}>{hardChoicesChance}%</span>
+            </label>
+            <input
+              id="hardChoices"
+              type="range"
+              min="0"
+              max="100"
+              step="5"
+              value={hardChoicesChance}
+              onChange={(e) => setHardChoicesChance(Number(e.target.value))}
+              style={styles.slider}
+            />
+          </div>
+
+          <div style={styles.configItem}>
+            <label htmlFor="newReserveCards">
+              New Reserve Cards Chance: <span style={styles.value}>{newReserveCardsChance}%</span>
+            </label>
+            <input
+              id="newReserveCards"
+              type="range"
+              min="0"
+              max="100"
+              step="5"
+              value={newReserveCardsChance}
+              onChange={(e) => setNewReserveCardsChance(Number(e.target.value))}
+              style={styles.slider}
+            />
+          </div>
         </div>
 
-        <div style={styles.configItem}>
-          <label htmlFor="hardChoices">
-            Hard Choices for Old Milestones Chance: <span style={styles.value}>{hardChoicesChance}%</span>
-          </label>
-          <input
-            id="hardChoices"
-            type="range"
-            min="0"
-            max="100"
-            step="5"
-            value={hardChoicesChance}
-            onChange={(e) => setHardChoicesChance(Number(e.target.value))}
-            style={styles.slider}
-          />
-        </div>
-
-        <div style={styles.configItem}>
-          <label htmlFor="newReserveCards">
-            New Reserve Cards Chance: <span style={styles.value}>{newReserveCardsChance}%</span>
-          </label>
-          <input
-            id="newReserveCards"
-            type="range"
-            min="0"
-            max="100"
-            step="5"
-            value={newReserveCardsChance}
-            onChange={(e) => setNewReserveCardsChance(Number(e.target.value))}
-            style={styles.slider}
-          />
-        </div>
-      </div>
-
-      {/* Additions Section */}
-      <div style={styles.section}>
-        <h2>Additions</h2>
-        <div style={styles.additionsList}>
-          {additions.map((addition, index) => (
-            <div
-              key={addition.name}
-              style={styles.additionItem}
-            >
-              <div style={styles.additionHeader}>
-                <input
-                  type="checkbox"
-                  checked={addition.enabled}
-                  onChange={() => handleAdditionToggle(index)}
-                  style={styles.checkbox}
-                />
-                <label style={styles.additionName}>{addition.name}</label>
-              </div>
+        {/* Additions Section */}
+        <div style={styles.section}>
+          <div style={styles.sectionHeader}>
+            <h2>Additions</h2>
+            <button type="button" onClick={resetAdditions} style={styles.sectionResetButton}>
+              Reset
+            </button>
+          </div>
+          <div style={styles.additionsList}>
+            {additions.map((addition, index) => (
               <div
-                style={{
-                  ...styles.additionSliderContainer,
-                  opacity: addition.enabled ? 1 : 0.5,
-                  pointerEvents: addition.enabled ? 'auto' : 'none',
-                }}
+                key={addition.name}
+                style={styles.additionItem}
               >
-                <label htmlFor={`addition-${index}`}>
-                  Complexity: <span style={styles.value}>{addition.complexity}</span>
-                </label>
-                <input
-                  id={`addition-${index}`}
-                  type="range"
-                  min="1"
-                  max="5"
-                  value={addition.complexity}
-                  onChange={(e) => handleAdditionComplexityChange(index, Number(e.target.value))}
-                  style={styles.slider}
-                />
+                <div style={styles.additionHeader}>
+                  <input
+                    type="checkbox"
+                    checked={addition.enabled}
+                    onChange={() => handleAdditionToggle(index)}
+                    style={styles.checkbox}
+                  />
+                  <label style={styles.additionName}>{addition.name}</label>
+                </div>
+                <div
+                  style={{
+                    ...styles.additionSliderContainer,
+                    opacity: addition.enabled ? 1 : 0.5,
+                    pointerEvents: addition.enabled ? 'auto' : 'none',
+                  }}
+                >
+                  <label htmlFor={`addition-${index}`}>
+                    Complexity: <span style={styles.value}>{addition.complexity}</span>
+                  </label>
+                  <input
+                    id={`addition-${index}`}
+                    type="range"
+                    min="1"
+                    max="5"
+                    value={addition.complexity}
+                    onChange={(e) => handleAdditionComplexityChange(index, Number(e.target.value))}
+                    style={styles.slider}
+                  />
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       </div>
 
-      <button onClick={handleGenerateClick} style={styles.button}>
-        GENERATE
-      </button>
+      <div style={styles.buttonBar}>
+        <button onClick={handleGenerateClick} style={styles.button}>
+          GENERATE
+        </button>
+      </div>
     </div>
   );
 }
 
 const styles = {
   container: {
-    padding: '40px',
+    width: '100%',
     maxWidth: '700px',
+    minHeight: '100vh',
     margin: '0 auto',
+    padding: '40px 40px 120px',
+    boxSizing: 'border-box' as const,
     backgroundColor: themeColors.bgPrimary,
     color: themeColors.textPrimary,
+    display: 'flex',
+    flexDirection: 'column' as const,
+    position: 'relative' as const,
+  } as const,
+  scrollContent: {
+    flex: 1,
+    paddingBottom: '20px',
   } as const,
   section: {
     marginBottom: '30px',
@@ -304,6 +369,38 @@ const styles = {
     border: `1px solid ${themeColors.borderColor}`,
     borderRadius: '8px',
     backgroundColor: themeColors.bgSecondary,
+  } as const,
+  headerRow: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '12px',
+    marginBottom: '20px',
+  } as const,
+  sectionHeader: {
+    display: 'flex',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    gap: '12px',
+    marginBottom: '16px',
+  } as const,
+  headerResetButton: {
+    padding: '8px 12px',
+    fontSize: '14px',
+    backgroundColor: themeColors.bgCard,
+    color: themeColors.textPrimary,
+    border: `1px solid ${themeColors.borderColor}`,
+    borderRadius: '6px',
+    cursor: 'pointer',
+  } as const,
+  sectionResetButton: {
+    padding: '6px 10px',
+    fontSize: '12px',
+    backgroundColor: themeColors.bgCard,
+    color: themeColors.textPrimary,
+    border: `1px solid ${themeColors.borderColor}`,
+    borderRadius: '6px',
+    cursor: 'pointer',
   } as const,
   configItem: {
     marginBottom: '20px',
@@ -355,6 +452,22 @@ const styles = {
   } as const,
   additionSliderContainer: {
     paddingLeft: '28px',
+  } as const,
+  buttonBar: {
+    position: 'fixed' as const,
+    left: '50%',
+    bottom: '20px',
+    transform: 'translateX(-50%)',
+    width: 'min(700px, calc(100% - 24px))',
+    maxWidth: '700px',
+    backgroundColor: themeColors.bgPrimary,
+    border: `1px solid ${themeColors.borderColor}`,
+    borderRadius: '12px',
+    boxShadow: '0 10px 25px rgba(0, 0, 0, 0.12)',
+    padding: '16px 0',
+    display: 'flex',
+    justifyContent: 'center',
+    zIndex: 10,
   } as const,
   button: {
     padding: '12px 32px',
