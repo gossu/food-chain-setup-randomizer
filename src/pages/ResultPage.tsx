@@ -10,7 +10,7 @@ interface ResultPageProps {
 interface GeneratedResults {
   milestones: string;
   reserveCards: string;
-  modules: Addition[];
+  modules: Addition[] | null;
 }
 
 // Fisher-Yates shuffle algorithm
@@ -67,35 +67,35 @@ export function ResultPage({ onBack, onRegenerate, config, resultVersion }: Resu
     let complexitySoFar = 0
     
     console.log('Starting Iteration:')
+
+    const initialIsWithinRange = config.minComplexity === 0
+    console.log(`Initial check: Complexity = ${complexitySoFar}. Within range? ${initialIsWithinRange}`)
+    if(config.minComplexity === 0){
+      candidateLists.push([]) // Add empty candidate if min complexity is 0
+      console.log(`  ✓ Adding candidate: [] (empty selection)`)
+    }
+
+
     for (let i = 0; i < shuffledModules.length; i++) {
       const module = shuffledModules[i]
       
-      // Step 1: If within range, add current selection to candidates
-      const isWithinRange = complexitySoFar >= config.minComplexity && complexitySoFar <= config.maxComplexity
-      console.log(`  Step ${i + 1}: Complexity so far = ${complexitySoFar}. Within range? ${isWithinRange}`)
-      
-      if (isWithinRange) {
-        console.log(`    ✓ Adding candidate: [${selectedModules.map(m => m.name).join(', ')}]`)
-        candidateLists.push([...selectedModules])
-      }
-      
-      // Step 2: Add next module and increase complexity, but only if it doesn't exceed max
       const newComplexity = complexitySoFar + module.complexity
       if (newComplexity <= config.maxComplexity) {
         selectedModules.push(module)
         complexitySoFar = newComplexity
         console.log(`    Adding module "${module.name}" (complexity: ${module.complexity}). New total: ${complexitySoFar}`)
+
+        const isWithinRange = complexitySoFar >= config.minComplexity
+        console.log(`  Step ${i + 1}: Complexity so far = ${complexitySoFar}. Within range? ${isWithinRange}`)
+
+        if(isWithinRange){
+          console.log(`    ✓ Adding candidate: [${selectedModules.map(m => m.name).join(', ')}]`)
+          candidateLists.push([...selectedModules])
+        }
+
       } else {
         console.log(`    Skipping module "${module.name}" (complexity: ${module.complexity}) - would exceed max (${newComplexity} > ${config.maxComplexity})`)
-      }
-    }
-    
-    // After loop, check one more time if we're within range
-    const finalIsWithinRange = complexitySoFar >= config.minComplexity && complexitySoFar <= config.maxComplexity
-    console.log(`Final check: Complexity = ${complexitySoFar}. Within range? ${finalIsWithinRange}`)
-    if (finalIsWithinRange) {
-      console.log(`  ✓ Adding final candidate: [${selectedModules.map(m => m.name).join(', ')}]`)
-      candidateLists.push([...selectedModules])
+      }  
     }
     
     console.log(`Total candidates generated: ${candidateLists.length}`)
@@ -106,7 +106,7 @@ export function ResultPage({ onBack, onRegenerate, config, resultVersion }: Resu
     })
     
     // Pick a random candidate list, or empty if no candidates
-    let modulesResult: Addition[] = []
+    let modulesResult: Addition[] | null = null
     if (candidateLists.length > 0) {
       modulesResult = candidateLists[Math.floor(Math.random() * candidateLists.length)]
       const selectedComplexity = modulesResult.reduce((sum, m) => sum + m.complexity, 0)
@@ -139,7 +139,7 @@ export function ResultPage({ onBack, onRegenerate, config, resultVersion }: Resu
         <div style={styles.section}>
           <h2>Modules</h2>
           <div style={styles.resultBox}>
-            {results.modules.length > 0 ? (
+            {results.modules !== null ? (
               <>
                 <ul style={styles.modulesList}>
                   {results.modules.map((module) => (
@@ -156,7 +156,7 @@ export function ResultPage({ onBack, onRegenerate, config, resultVersion }: Resu
                 </div>
               </>
             ) : (
-              <p style={styles.resultText}>No valid modules found for this complexity range</p>
+              <p style={styles.resultText}>Unable to compile a list of modules within the specified complexity range</p>
             )}
           </div>
         </div>

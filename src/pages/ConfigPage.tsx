@@ -341,7 +341,7 @@ export function ConfigPage({ onGenerate }: ConfigPageProps) {
                 style={styles.slider}
               />
             </div>
-            <div style={styles.helperText}>Max: {additionsSum} (sum of all enabled additions)</div>
+            <div style={styles.helperText}>Max: {additionsSum} (sum of all enabled modules)</div>
           </div>
 
           <div style={styles.configItem}>
@@ -365,7 +365,7 @@ export function ConfigPage({ onGenerate }: ConfigPageProps) {
                 style={styles.slider}
               />
             </div>
-            <div style={styles.helperText}>Max: {additionsSum} (sum of all enabled additions)</div>
+            <div style={styles.helperText}>Max: {additionsSum} (sum of all enabled modules)</div>
           </div>
         </div>
 
